@@ -8,6 +8,7 @@ import Workout from '../models/Workout';
 
 const connectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/octofit_db';
 
+// Seed the octofit_db database with test data.
 const teams = [
   {
     _id: new Types.ObjectId('650000000000000000000001'),
@@ -180,37 +181,30 @@ async function seedDatabase(): Promise<void> {
 
     console.log('Connected to octofit_db');
 
-    await Promise.all(
-      teams.map(({ _id, ...team }) => Team.updateOne({ _id }, { $set: team }, { upsert: true })),
-    );
+    await Promise.all([
+      Team.deleteMany({ _id: { $in: teams.map((team) => team._id) } }),
+      User.deleteMany({ _id: { $in: users.map((user) => user._id) } }),
+      Activity.deleteMany({ _id: { $in: activities.map((activity) => activity._id) } }),
+      Leaderboard.deleteMany({ _id: { $in: leaderboard.map((entry) => entry._id) } }),
+      Workout.deleteMany({ _id: { $in: workouts.map((workout) => workout._id) } }),
+    ]);
 
-    await Promise.all(
-      users.map(({ _id, ...user }) => User.updateOne({ _id }, { $set: user }, { upsert: true })),
+    await Team.create(
+      teams.map((team) => {
+        const members = users.filter((user) => user.team.equals(team._id));
+        return {
+          ...team,
+          members: members.map((user) => user._id),
+          totalPoints: members.reduce((total, user) => total + user.points, 0),
+        };
+      }),
     );
+    await User.create(users);
 
     await Promise.all([
-      ...activities.map(({ _id, ...activity }) =>
-        Activity.updateOne({ _id }, { $set: activity }, { upsert: true }),
-      ),
-      ...leaderboard.map(({ _id, ...entry }) =>
-        Leaderboard.updateOne({ _id }, { $set: entry }, { upsert: true }),
-      ),
-      ...workouts.map(({ _id, ...workout }) =>
-        Workout.updateOne({ _id }, { $set: workout }, { upsert: true }),
-      ),
-      ...teams.map((team) =>
-        Team.updateOne(
-          { _id: team._id },
-          {
-            $set: {
-              members: users.filter((user) => user.team.equals(team._id)).map((user) => user._id),
-              totalPoints: users
-                .filter((user) => user.team.equals(team._id))
-                .reduce((total, user) => total + user.points, 0),
-            },
-          },
-        ),
-      ),
+      Activity.create(activities),
+      Leaderboard.insertMany(leaderboard),
+      Workout.insertMany(workouts),
     ]);
 
     const [userCount, teamCount, activityCount, leaderboardCount, workoutCount] = await Promise.all(
