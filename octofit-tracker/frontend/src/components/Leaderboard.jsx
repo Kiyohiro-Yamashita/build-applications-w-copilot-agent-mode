@@ -1,4 +1,5 @@
 import CollectionView from './CollectionView.jsx'
+import { fetchCollection as fetch } from '../api.js'
 
 const columns = [
   { key: 'rank', label: 'Rank' },
@@ -9,5 +10,5 @@ const columns = [
 ]
 
 export default function Leaderboard() {
-  return <CollectionView title="Leaderboard" path="/api/leaderboard/" columns={columns} />
+  return <CollectionView title="Leaderboard" path="/api/leaderboard/" columns={columns} fetcher={fetch} />
 }

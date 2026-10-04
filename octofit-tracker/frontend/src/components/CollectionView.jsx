@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { fetchCollection } from '../api.js'
 
 function formatValue(value) {
   if (value === null || value === undefined || value === '') {
@@ -17,7 +16,7 @@ function formatValue(value) {
   return String(value)
 }
 
-export default function CollectionView({ title, path, columns }) {
+export default function CollectionView({ title, path, columns, fetcher }) {
   const [records, setRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -27,7 +26,7 @@ export default function CollectionView({ title, path, columns }) {
 
     async function loadRecords() {
       try {
-        setRecords(await fetchCollection(path, controller.signal))
+        setRecords(await fetcher(path, controller.signal))
       } catch (requestError) {
         if (!controller.signal.aborted) {
           setError(requestError instanceof Error ? requestError.message : 'Unable to load records.')
@@ -41,7 +40,7 @@ export default function CollectionView({ title, path, columns }) {
 
     loadRecords()
     return () => controller.abort()
-  }, [path])
+  }, [fetcher, path])
 
   return (
     <main className="container py-4">

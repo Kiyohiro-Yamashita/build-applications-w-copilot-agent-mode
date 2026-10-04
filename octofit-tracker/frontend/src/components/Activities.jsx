@@ -1,4 +1,5 @@
 import CollectionView from './CollectionView.jsx'
+import { fetchCollection as fetch } from '../api.js'
 
 const columns = [
   { key: 'user', label: 'User' },
@@ -10,5 +11,5 @@ const columns = [
 ]
 
 export default function Activities() {
-  return <CollectionView title="Activities" path="/api/activities/" columns={columns} />
+  return <CollectionView title="Activities" path="/api/activities/" columns={columns} fetcher={fetch} />
 }

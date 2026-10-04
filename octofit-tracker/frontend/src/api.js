@@ -1,5 +1,6 @@
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
-const codespaceName = window.location.hostname.match(/^(.*)-5173\.app\.github\.dev$/)?.[1]
+const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim()
+  || window.location.hostname.match(/^(.*)-5173\.app\.github\.dev$/)?.[1]
 
 export const API_BASE_URL = configuredApiBaseUrl || (
   import.meta.env.DEV
